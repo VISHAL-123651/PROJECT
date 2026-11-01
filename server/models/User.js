@@ -68,11 +68,10 @@ const userSchema = new mongoose.Schema({
 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+userSchema.pre('save', async function() {
+  if (!this.isModified('password')) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 // Compare password method
@@ -103,7 +102,7 @@ userSchema.methods.calculateTDEE = function() {
 };
 
 // Auto-calculate BMR and TDEE before saving
-userSchema.pre('save', function(next) {
+userSchema.pre('save', function() {
   if (this.isModified('weight') || this.isModified('height') || this.isModified('age') || this.isModified('gender') || this.isModified('activityLevel')) {
     this.bmr = this.calculateBMR();
     this.tdee = this.calculateTDEE();
@@ -111,7 +110,6 @@ userSchema.pre('save', function(next) {
       this.dailyCalorieGoal = this.tdee;
     }
   }
-  next();
 });
 
 module.exports = mongoose.model('User', userSchema);

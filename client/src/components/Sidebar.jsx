@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import '../styles/dashboard.css';
 
 const Sidebar = ({ activeTab, setActiveTab, isMobileOpen, setIsMobileOpen }) => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout, isDemoMode } = useContext(AuthContext);
 
   const navItems = [
     { id: 'overview', label: 'Overview', icon: '📊' },
@@ -23,7 +23,21 @@ const Sidebar = ({ activeTab, setActiveTab, isMobileOpen, setIsMobileOpen }) => 
       <div className={`sidebar ${isMobileOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
           <span className="logo-icon">🍏</span>
-          <h1>Nutri<span className="gradient-text">Track</span></h1>
+          <div>
+            <h1>Nutri<span className="gradient-text">Track</span></h1>
+            {isDemoMode && (
+              <span className="demo-pill-badge">✨ Demo Workspace</span>
+            )}
+          </div>
+        </div>
+
+        {/* Habit Streak Widget */}
+        <div className="sidebar-streak-pill">
+          <span className="streak-flame">🔥</span>
+          <div className="streak-pill-text">
+            <strong>5-Day Streak</strong>
+            <span>Active Goal</span>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
@@ -54,7 +68,7 @@ const Sidebar = ({ activeTab, setActiveTab, isMobileOpen, setIsMobileOpen }) => 
           </div>
           <button className="logout-btn" onClick={logout}>
             <span className="nav-item-icon">🚪</span>
-            Log Out
+            {isDemoMode ? 'Exit Demo' : 'Log Out'}
           </button>
         </div>
       </div>

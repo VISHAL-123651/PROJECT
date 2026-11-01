@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
     await user.save();
 
     // Generate JWT
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'nutritrack-fallback-dev-secret', {
       expiresIn: '7d'
     });
 
@@ -90,7 +90,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Generate JWT
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'nutritrack-fallback-dev-secret', {
       expiresIn: '7d'
     });
 

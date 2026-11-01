@@ -9,16 +9,16 @@ const LoginPage = () => {
     name: '',
     email: '',
     password: '',
-    height: '',
-    weight: '',
-    age: '',
+    height: '175',
+    weight: '70',
+    age: '25',
     gender: 'male',
     activityLevel: 'moderate'
   });
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState('');
 
-  const { login, register, user, error: authError } = useContext(AuthContext);
+  const { login, register, loginDemoUser, user, error: authError } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -39,6 +39,12 @@ const LoginPage = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (localError) setLocalError('');
+  };
+
+  const handleDemoLogin = () => {
+    setLoading(true);
+    loginDemoUser();
+    navigate('/dashboard');
   };
 
   const handleSubmit = async (e) => {
@@ -85,9 +91,53 @@ const LoginPage = () => {
     setLocalError('');
   };
 
+  // Live BMR / TDEE / BMI calculations for instant signup preview
+  const heightNum = Number(formData.height);
+  const weightNum = Number(formData.weight);
+  const ageNum = Number(formData.age);
+
+  let previewBmr = 0;
+  let previewTdee = 0;
+  let bmi = 0;
+  let bmiCategory = '';
+  let bmiColor = 'var(--accent-primary)';
+
+  if (heightNum > 50 && weightNum > 20 && ageNum > 8) {
+    const heightM = heightNum / 100;
+    bmi = (weightNum / (heightM * heightM)).toFixed(1);
+    if (bmi < 18.5) {
+      bmiCategory = 'Underweight';
+      bmiColor = 'var(--accent-warning)';
+    } else if (bmi < 25) {
+      bmiCategory = 'Normal Weight';
+      bmiColor = 'var(--accent-primary)';
+    } else if (bmi < 30) {
+      bmiCategory = 'Overweight';
+      bmiColor = 'var(--accent-warning)';
+    } else {
+      bmiCategory = 'Obese';
+      bmiColor = 'var(--accent-danger)';
+    }
+
+    if (formData.gender === 'male') {
+      previewBmr = Math.round(10 * weightNum + 6.25 * heightNum - 5 * ageNum + 5);
+    } else {
+      previewBmr = Math.round(10 * weightNum + 6.25 * heightNum - 5 * ageNum - 161);
+    }
+
+    const multipliers = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+      very_active: 1.9
+    };
+    previewTdee = Math.round(previewBmr * (multipliers[formData.activityLevel] || 1.55));
+  }
+
   return (
     <div className="auth-page">
-      {/* Background Orbs */}
+      {/* Background Glow Orbs */}
       <div className="auth-orb auth-orb-1"></div>
       <div className="auth-orb auth-orb-2"></div>
       <div className="auth-orb auth-orb-3"></div>
@@ -95,25 +145,42 @@ const LoginPage = () => {
       {/* Left Panel - Branding */}
       <div className="auth-branding">
         <div className="auth-branding-content">
+          <div className="auth-badge">✨ Next-Gen AI Nutrition Engine</div>
           <h1 className="auth-logo">
             <span className="logo-icon">🍏</span><br />
             Nutri<span className="gradient-text">Track</span>
           </h1>
           <p className="auth-tagline">
-            Your AI-powered personal nutritionist. Snap a photo of your meal and let our intelligent engine calculate the rest.
+            Your intelligent personal nutritionist. Snap food photos, auto-detect macros, track hydration, and reach your fitness goals with cutting-edge AI.
           </p>
           <div className="auth-features">
             <div className="auth-feature delay-1">
               <span className="auth-feature-icon">📸</span>
-              <span>AI Image Recognition for meals</span>
+              <div>
+                <strong>AI Laser Food Vision</strong>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Instant item and macro estimation</p>
+              </div>
             </div>
             <div className="auth-feature delay-2">
               <span className="auth-feature-icon">📊</span>
-              <span>Automatic Calorie & Macro tracking</span>
+              <div>
+                <strong>Concentric Macro Rings</strong>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Real-time balance of Protein, Carbs & Fat</p>
+              </div>
             </div>
             <div className="auth-feature delay-3">
+              <span className="auth-feature-icon">💧</span>
+              <div>
+                <strong>Hydration & Habit Streaks</strong>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Water tracker & daily logging streaks</p>
+              </div>
+            </div>
+            <div className="auth-feature delay-4">
               <span className="auth-feature-icon">🤖</span>
-              <span>Personalized AI meal suggestions</span>
+              <div>
+                <strong>NutriBot Interactive Coach</strong>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Smart meal suggestions with 1-click logging</p>
+              </div>
             </div>
           </div>
         </div>
@@ -122,9 +189,32 @@ const LoginPage = () => {
       {/* Right Panel - Form */}
       <div className="auth-form-panel">
         <div className="auth-form-container">
+          {/* Quick Demo Mode Banner */}
+          <div className="demo-mode-card">
+            <div className="demo-mode-header">
+              <span className="demo-mode-badge">⚡ Instant Preview</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>No account required</span>
+            </div>
+            <p className="demo-mode-desc">
+              Test drive NutriTrack with pre-populated meals, hydration logs, and 7-day analytics immediately.
+            </p>
+            <button 
+              type="button" 
+              className="btn-demo-mode"
+              onClick={handleDemoLogin}
+              disabled={loading}
+            >
+              🚀 Explore in Demo Mode
+            </button>
+          </div>
+
+          <div className="auth-divider">
+            <span>or continue with your account</span>
+          </div>
+
           <div className="auth-form-header">
             <h2>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
-            <p>{isLogin ? 'Enter your details to access your dashboard' : 'Start your health journey today'}</p>
+            <p>{isLogin ? 'Enter your credentials to access your nutrition diary' : 'Start your personalized health journey today'}</p>
           </div>
 
           <div className="auth-tabs">
@@ -133,7 +223,7 @@ const LoginPage = () => {
               onClick={() => setIsLogin(true)}
               type="button"
             >
-              Login
+              Sign In
             </button>
             <button 
               className={`auth-tab ${!isLogin ? 'active' : ''}`} 
@@ -159,7 +249,7 @@ const LoginPage = () => {
                   type="text" 
                   name="name" 
                   className="input-field" 
-                  placeholder="John Doe"
+                  placeholder="e.g. Jordan Miller"
                   value={formData.name}
                   onChange={handleChange}
                 />
@@ -251,13 +341,44 @@ const LoginPage = () => {
                     value={formData.activityLevel}
                     onChange={handleChange}
                   >
-                    <option value="sedentary">Sedentary (little to no exercise)</option>
+                    <option value="sedentary">Sedentary (desk job, little exercise)</option>
                     <option value="light">Light (exercise 1-3 days/week)</option>
                     <option value="moderate">Moderate (exercise 3-5 days/week)</option>
-                    <option value="active">Active (exercise 6-7 days/week)</option>
-                    <option value="very_active">Very Active (hard exercise daily)</option>
+                    <option value="active">Active (intense exercise 6-7 days/week)</option>
+                    <option value="very_active">Very Active (athlete / physical work)</option>
                   </select>
                 </div>
+
+                {/* Live Interactive BMR / TDEE / BMI Preview Card */}
+                {previewBmr > 0 && (
+                  <div className="live-preview-card">
+                    <div className="live-preview-header">
+                      <span className="live-preview-tag">⚡ Live Metric Estimation</span>
+                      <span className="live-preview-bmi" style={{ borderColor: bmiColor, color: bmiColor }}>
+                        BMI {bmi} • {bmiCategory}
+                      </span>
+                    </div>
+                    <div className="live-preview-grid">
+                      <div className="live-metric-item">
+                        <span className="live-metric-num">{previewBmr}</span>
+                        <span className="live-metric-lbl">BMR (Basal kcal)</span>
+                      </div>
+                      <div className="live-metric-item highlight">
+                        <span className="live-metric-num">{previewTdee}</span>
+                        <span className="live-metric-lbl">TDEE (Maint. kcal)</span>
+                      </div>
+                      <div className="live-metric-item">
+                        <span className="live-metric-num" style={{ color: 'var(--accent-warning)' }}>
+                          {previewTdee - 400}
+                        </span>
+                        <span className="live-metric-lbl">Fat Loss Goal</span>
+                      </div>
+                    </div>
+                    <p className="live-preview-hint">
+                      💡 We'll automatically set your daily target to <strong>{previewTdee} kcal</strong>. You can customize this anytime in your Profile.
+                    </p>
+                  </div>
+                )}
               </>
             )}
 
@@ -265,7 +386,7 @@ const LoginPage = () => {
               {loading ? (
                 <div className="spinner"></div>
               ) : (
-                isLogin ? 'Sign In' : 'Create Account'
+                isLogin ? 'Sign In to Dashboard' : 'Create My Account'
               )}
             </button>
           </form>
@@ -273,7 +394,7 @@ const LoginPage = () => {
           <div className="auth-toggle">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button onClick={toggleMode} type="button">
-              {isLogin ? 'Sign up' : 'Log in'}
+              {isLogin ? 'Sign up free' : 'Sign in'}
             </button>
           </div>
         </div>
